@@ -81,6 +81,14 @@ class IbdForceTeachingImplementation(object):
         self.config = None
         # received messages during processing
         self.wrenches = list()
+        # whether manipulation start is detected
+        self.is_start_detected = False
+        # iteration
+        self.start_id = -1
+        # whether manipulation end is detected
+        self.is_end_detected = False
+        # iteration
+        self.end_id = -1
         # protected region user member variables end #
 
     def configure(self, config):
@@ -107,8 +115,10 @@ class IbdForceTeachingImplementation(object):
         @return nothing
         """
         # protected region user update begin #
-        # can be removed once filled
-        pass
+        if data.in_wrench_updated:
+            self.wrenches.append(data.in_wrench)
+            nb_elt = len(self.wrenches)
+            rospy.loginfo("Last value (): {}".format(nb_elt, data.in_wrench))
         # protected region user update end #
 
 
@@ -139,6 +149,33 @@ class IbdForceTeachingImplementation(object):
         #        self.passthrough.as_learn.set_preempted()
         #        success = False
         #        break
+        rate = rospy.Rate(200)
+        rospy.loginfo("Received goal: {}".format(goal))
+
+        self.is_start_detected = goal.is_on_contact
+        self.start_id = -1
+        self.is_end_detected = False
+        self.end_id = -1
+
+        is_done = False
+        while not is_done:
+            if len(self.wrenches < self.config.wrench_window):
+                continue
+            # enough data for making process
+            # get the last window
+            # convert it into an array structure
+            # compute the related std
+            # look at how this was done in contact_detection
+            is_std_overcome = False
+            if not self.is_start_detected and is_std_overcome:
+                # start detected
+                self.is_start_detected = True
+                # what to do with the id?
+                continue
+            if self.is_start_detected and not is_std_overcome:
+                self.is_end_detected = True
+                is_done = True
+
         # protected region user implementation of action callback for learn end #
 
     # protected region user additional functions begin #
