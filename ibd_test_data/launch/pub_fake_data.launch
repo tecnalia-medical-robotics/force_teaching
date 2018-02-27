@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="inc" default="1"/>
+  <!--  loading wrench from csv and publish them in loop-->
+  <node name="wrench_from_csv" pkg= "ibd_test_data" type= "wrench_from_csv" output="screen">
+    <param name="csv_file" type="str" value="$(find ibd_test_data)/data/Trial_3.csv"/>
+    <param name="inc" type="int" value="$(arg inc)"/>
+  </node>
+</launch>

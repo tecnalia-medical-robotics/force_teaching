@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package name="ibd_test_data" author="Anthony Remazeilles"
+    author_email="anthony.remazeilles@tecnalia.com"
+    description="Package containing reference data for initial dev"
+    license="https://www.gnu.org/licenses/gpl.txt">
+    <node name="wrench_from_csv" frequency="1000">
+        <publisher name="wrench" type="geometry_msgs::WrenchStamped"
+            description="emulated wrench measure"/>
+        <parameter name="csv_file" type="std::string" value="Undef"
+            description="csv file containing wrench information to publish"/>
+        <parameter name="inc" type="int" value="1"
+            description="from the wrench measure, increment applied at each publication loop"/>
+    </node>
+<depend>geometry_msgs</depend>
+</package>

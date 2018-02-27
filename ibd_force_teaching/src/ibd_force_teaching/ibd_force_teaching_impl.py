@@ -15,6 +15,7 @@ from force_teaching_msgs.msg import TeachIbDForceFeedback, TeachIbDForceResult
 
 # protected region user include package begin #
 from copy import deepcopy
+import numpy
 # protected region user include package end #
 
 class IbdForceTeachingConfig(object):
@@ -79,8 +80,11 @@ class IbdForceTeachingImplementation(object):
         # protected region user member variables begin #
         # internal copy of the config variables
         self.config = None
+        # last message received
+        self.last_wrench = None
         # received messages during processing
         self.wrenches = list()
+
         # whether manipulation start is detected
         self.is_start_detected = False
         # iteration
@@ -100,6 +104,7 @@ class IbdForceTeachingImplementation(object):
         """
         # protected region user configure begin #
         self.config = deepcopy(config)
+        return True
         # protected region user configure end #
 
 
@@ -116,9 +121,10 @@ class IbdForceTeachingImplementation(object):
         """
         # protected region user update begin #
         if data.in_wrench_updated:
-            self.wrenches.append(data.in_wrench)
-            nb_elt = len(self.wrenches)
-            rospy.loginfo("Last value (): {}".format(nb_elt, data.in_wrench))
+            #rospy.loginfo("Last value: {}".format(data.in_wrench))
+            self.last_wrench = data.in_wrench
+            #self.wrenches.append(data.in_wrench)
+            #nb_elt = len(self.wrenches)
         # protected region user update end #
 
 
@@ -157,26 +163,49 @@ class IbdForceTeachingImplementation(object):
         self.is_end_detected = False
         self.end_id = -1
 
+        min_force = None
+        max_force = None
+
         is_done = False
         while not is_done:
-            if len(self.wrenches < self.config.wrench_window):
-                continue
-            # enough data for making process
-            # get the last window
-            # convert it into an array structure
-            # compute the related std
-            # look at how this was done in contact_detection
-            is_std_overcome = False
-            if not self.is_start_detected and is_std_overcome:
-                # start detected
-                self.is_start_detected = True
-                # what to do with the id?
-                continue
-            if self.is_start_detected and not is_std_overcome:
-                self.is_end_detected = True
-                is_done = True
+            wrench = wrench_to_array(self.last_wrench.wrench)
+            if min_force is None:
+                min_force = wrench
+                max_force = wrench
 
+            min_force = numpy.minimum(min_force, wrench)
+            max_force = numpy.maximum(max_force, wrench)
+
+            rospy.loginfo("Min: {}".format(min_force))
+            rospy.loginfo("Max: {}".format(max_force))
+
+            # if len(self.wrenches < self.config.wrench_window):
+            #     continue
+            # # enough data for making process
+            # # get the last window
+            # # convert it into an array structure
+            # # compute the related std
+            # # look at how this was done in contact_detection
+            # is_std_overcome = False
+            # if not self.is_start_detected and is_std_overcome:
+            #     # start detected
+            #     self.is_start_detected = True
+            #     # what to do with the id?
+            #     continue
+            # if self.is_start_detected and not is_std_overcome:
+            #     self.is_end_detected = True
+            #     is_done = True
+            rate.sleep()
         # protected region user implementation of action callback for learn end #
 
     # protected region user additional functions begin #
+
+def wrench_to_array(wrench):
+    """
+    convert a geometry_msgs array into an 1d array
+    :param wrench: the wrench to convert
+    :return: the related array
+    """
+    return numpy.array([wrench.force.x, wrench.force.y, wrench.force.z,
+                        wrench.torque.x, wrench.torque.y, wrench.torque.z])
     # protected region user additional functions end #
