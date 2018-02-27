@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+"""
+@package ibd_force_teaching
+@file ibd_force_teaching
+@author Anthony Remazeilles
+@brief Teaching of force magnitude during insertion by deformation
+        Entry point to the node.
+Copyright (C) {packageCopyright}
+https://www.gnu.org/licenses/gpl.txt
+"""
+from ibd_force_teaching.ibd_force_teaching_ros import main
+
+if __name__ == '__main__':
+    main()

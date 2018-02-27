@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package name="ibd_force_teaching" author="Anthony Remazeilles"
+    author_email="anthony.remazeilles@tecnalia.com"
+    description="Teaching of force magnitude during insertion by deformation"
+    license="https://www.gnu.org/licenses/gpl.txt">
+    <node name="ibd_force_teaching" frequency="200">
+        <subscriber name="wrench" type="geometry_msgs::WrenchStamped"
+            description="Wrench measured by the sensor"/>
+        <parameter name="wrench_window" type="int" value="10"
+            description="number of samples used for detecting manipulation start or stop"/>
+        <parameter name="wrench_std" type="double" value="0.1"
+            description="maximum std used to detect manipulation limits"/>
+        <actionServer name="learn" type="force_teaching_msgs::TeachIbDForce"
+            description="to launch the force learning" />
+    </node>
+<depend>geometry_msgs</depend>
+<depend>actionlib</depend>
+</package>
