@@ -12,6 +12,8 @@ Teaching of force magnitude during insertion by deformation
 # Node: ibd_force_teaching
 Update frequency: 200 Hz.
 
+This node is using `\tf` to get transform information.
+
 <!--- protected region ibd_force_teaching begin -->
 <!--- protected region ibd_force_teaching end -->
 
@@ -29,6 +31,14 @@ number of samples used for detecting manipulation start or stop
 <!--- protected region param wrench_std begin -->
 maximum std used to detect manipulation limits
 <!--- protected region param wrench_std end -->
+`force_frame` *(string, default: "/force_sensor")*
+<!--- protected region param force_frame begin -->
+tf name of the sensor frame
+<!--- protected region param force_frame end -->
+`receptacle_object_frame` *(string, default: "/static_object")*
+<!--- protected region param receptacle_object_frame begin -->
+tf name of the object that will receive the clip (static object in unimanual experiment
+<!--- protected region param receptacle_object_frame end -->
 
 ## Subscribed Topics
 

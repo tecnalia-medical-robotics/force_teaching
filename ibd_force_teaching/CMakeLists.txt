@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   force_teaching_msgs
   actionlib_msgs
+  tf
 )
 
 # protected region additional user defined REQUIREMENTS begin #
@@ -51,6 +52,7 @@ catkin_package(
     dynamic_reconfigure
     force_teaching_msgs
     actionlib_msgs
+    tf
 )
 
 ###########

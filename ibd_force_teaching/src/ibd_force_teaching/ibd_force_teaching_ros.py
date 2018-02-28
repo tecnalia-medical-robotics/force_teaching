@@ -58,6 +58,8 @@ class IbdForceTeachingROS(object):
         """
         self.component_config_.wrench_window = config.wrench_window
         self.component_config_.wrench_std = config.wrench_std
+        self.component_config_.force_frame = config.force_frame
+        self.component_config_.receptacle_object_frame = config.receptacle_object_frame
         return config
 
     def configure(self):
@@ -72,7 +74,7 @@ class IbdForceTeachingROS(object):
         """
         pass
 
-    def set_all_output_read(self):
+    def set_all_input_read(self):
         """
         set related flag to state that input has been read
         """
@@ -91,7 +93,7 @@ class IbdForceTeachingROS(object):
         self.activate_all_output()
         config = deepcopy(self.component_config_)
         data = deepcopy(self.component_data_)
-        self.set_all_output_read()
+        self.set_all_input_read()
         self.component_implementation_.update(data, config)
 
 

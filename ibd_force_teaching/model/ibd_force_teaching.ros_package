@@ -10,8 +10,13 @@
             description="number of samples used for detecting manipulation start or stop"/>
         <parameter name="wrench_std" type="double" value="0.1"
             description="maximum std used to detect manipulation limits"/>
+        <parameter name="force_frame" type="string" value="/force_sensor"
+            description="tf name of the sensor frame"/>
+        <parameter name="receptacle_object_frame" type="string" value="/static_object"
+            description="tf name of the object that will receive the clip (static object in unimanual experiment"/>
         <actionServer name="learn" type="force_teaching_msgs::TeachIbDForce"
             description="to launch the force learning" />
+        <listener name="tf_listen" description="to get object pose wrt force sensor"/>
     </node>
 <depend>geometry_msgs</depend>
 <depend>actionlib</depend>

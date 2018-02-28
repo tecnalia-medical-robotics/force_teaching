@@ -12,6 +12,7 @@ https://www.gnu.org/licenses/gpl.txt
 import rospy
 from geometry_msgs.msg import WrenchStamped
 from force_teaching_msgs.msg import TeachIbDForceFeedback, TeachIbDForceResult
+import tf
 
 # protected region user include package begin #
 from copy import deepcopy
@@ -26,12 +27,16 @@ class IbdForceTeachingConfig(object):
     def __init__(self):
         self.wrench_window = 10
         self.wrench_std = 0.1
+        self.force_frame = "/force_sensor"
+        self.receptacle_object_frame = "/static_object"
         pass
 
     def __str__(self):
         msg = "Instance of IbdForceTeachingConfig class: {"
         msg += "wrench_window: {} ".format(self.wrench_window)
         msg += "wrench_std: {} ".format(self.wrench_std)
+        msg += "force_frame: {} ".format(self.force_frame)
+        msg += "receptacle_object_frame: {} ".format(self.receptacle_object_frame)
         msg += "}"
         return msg
 
@@ -64,6 +69,7 @@ class IbdForceTeachingPassthrough(object):
     def __init__(self):
         """ Class to contain variable breaking the interface separation
         """
+        self.tf_listen = tf.TransformListener()
         self.as_learn = None
         pass
 
