@@ -11,10 +11,9 @@ Doing:
    Eventually later on we could add parameters to set the appropriate axes for the maximum search.
  * so we need the name of the object frame, and the name of the sensor frame
  * handled with dynamic parameters again.
+
 Todo:
-* Implement a static transformer, based on the pose of the static object, as we have it now
- * transform from the sensor to the object would be needed.
-* Implement the transformation
+* Check how to add properlly dependency on pykdl or kdl actually
 * Check for the intial and final state analysis: how to detect stability?
  * mention it with Pierre eventually?
 * list potential needs in the node_generator...

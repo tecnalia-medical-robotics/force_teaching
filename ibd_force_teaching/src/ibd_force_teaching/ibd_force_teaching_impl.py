@@ -17,6 +17,7 @@ import tf
 # protected region user include package begin #
 from copy import deepcopy
 import numpy
+import PyKDL
 # protected region user include package end #
 
 class IbdForceTeachingConfig(object):
@@ -146,7 +147,6 @@ class IbdForceTeachingImplementation(object):
         """
 
         # protected region user implementation of action callback for learn begin #
-        # to provide feedback during action execution
         # to send the feedback, one should use:
         # self.passthrough.as_learn.publish_feedback(feedback)
         feedback = TeachIbDForceFeedback()
@@ -172,15 +172,56 @@ class IbdForceTeachingImplementation(object):
         min_force = None
         max_force = None
 
+
         is_done = False
         while not is_done:
-            wrench = wrench_to_array(self.last_wrench.wrench)
-            if min_force is None:
-                min_force = wrench
-                max_force = wrench
+            if self.passthrough.as_learn.is_preempt_requested():
+               rospy.loginfo('Preempted action learn')
+               self.passthrough.as_learn.set_preempted()
+               success = False
+               break
 
-            min_force = numpy.minimum(min_force, wrench)
-            max_force = numpy.maximum(max_force, wrench)
+            # get the pose of the sensor relative to the object
+            sensor_frame = self.last_wrench.header.frame_id
+            object_frame = self.config.receptacle_object_frame
+            timestamp = self.last_wrench.header.stamp
+
+            try:
+                (trans, rot) = self.passthrough.tf_listen.lookupTransform(object_frame,
+                                                                          sensor_frame,
+                                                                          timestamp)
+
+                rospy.logwarn("Transform received: \n {} \n {}".format(trans, rot))
+                rospy.logwarn("{} {}".format(type(trans), type(rot)))
+
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                rospy.logwarn("no tf received")
+                continue
+
+            # frame mapping points from the wrench frame to the object frame
+            oFs = PyKDL.Frame()
+            oFs.p = PyKDL.Vector(*trans)
+            oFs.M = PyKDL.Rotation.Quaternion(*rot)
+
+            sWrench = PyKDL.Wrench()
+            tmp_force = self.last_wrench.wrench.force
+            tmp_torque = self.last_wrench.wrench.torque
+
+            sWrench.force = PyKDL.Vector(tmp_force.x, tmp_force.y, tmp_force.z)
+            sWrench.torque = PyKDL.Vector(tmp_torque.x, tmp_torque.y, tmp_torque.z)
+
+            owrench = oFs * sWrench
+            # convert the frame into pykdl structure
+            # move the wrench into that frame
+            # make the computations
+
+            owrench = kdl_wrench_to_array(owrench)
+            if min_force is None:
+                min_force = owrench
+                max_force = owrench
+
+            min_force = numpy.minimum(min_force, owrench)
+            max_force = numpy.maximum(max_force, owrench)
 
             rospy.loginfo("Min: {}".format(min_force))
             rospy.loginfo("Max: {}".format(max_force))
@@ -202,6 +243,7 @@ class IbdForceTeachingImplementation(object):
             #     self.is_end_detected = True
             #     is_done = True
             rate.sleep()
+
         # protected region user implementation of action callback for learn end #
 
     # protected region user additional functions begin #
@@ -214,4 +256,23 @@ def wrench_to_array(wrench):
     """
     return numpy.array([wrench.force.x, wrench.force.y, wrench.force.z,
                         wrench.torque.x, wrench.torque.y, wrench.torque.z])
+
+def kdl_vector_to_array(vector):
+    """
+    Converts a C{PyKDL.Vector} with fields into a numpy array.
+
+    @type vector: PyKDL.Vector
+    @param vector: The C{PyKDL.Vector} to be converted
+    @rtype: array
+    @return: The resulting numpy array
+    @warning taken from https://github.com/crigroup/criros/blob/master/src/criros/conversions.py
+    """
+    return numpy.array([vector.x(), vector.y(), vector.z()])
+
+def kdl_wrench_to_array(kdl_wrench):
+    array = numpy.zeros(6)
+    array[:3] = kdl_vector_to_array(kdl_wrench.force)
+    array[3:] = kdl_vector_to_array(kdl_wrench.torque)
+    return array
+
     # protected region user additional functions end #
