@@ -190,10 +190,7 @@ class IbdForceTeachingImplementation(object):
                 (trans, rot) = self.passthrough.tf_listen.lookupTransform(object_frame,
                                                                           sensor_frame,
                                                                           timestamp)
-
-                rospy.logwarn("Transform received: \n {} \n {}".format(trans, rot))
-                rospy.logwarn("{} {}".format(type(trans), type(rot)))
-
+                # rospy.logwarn("Transform received: \n {} \n {}".format(trans, rot))
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 rospy.logwarn("no tf received")
                 continue

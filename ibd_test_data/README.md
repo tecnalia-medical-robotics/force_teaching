@@ -4,6 +4,10 @@ ibd_test_data
 # General description of the package
 Package containing reference data for initial dev
 <!--- protected region package descripion begin -->
+
+The wrench information is read from a csv file, and is then published as a wrench stamped.
+
+The csv file contains the pose and the wrnch measured by the two objects.
 <!--- protected region package descripion end -->
 
 <!--- todo How to handle the image generation -->
@@ -13,6 +17,13 @@ Package containing reference data for initial dev
 Update frequency: 1000 Hz.
 
 <!--- protected region wrench_from_csv begin -->
+
+A launch file is created to launch the data stored in a csv file.
+
+```
+roslaunch ibd_test_data pub_fake_data.launch
+```
+
 <!--- protected region wrench_from_csv end -->
 
 ## Dynamic Parameters
