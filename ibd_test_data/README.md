@@ -11,7 +11,7 @@ The csv file contains the pose and the wrnch measured by the two objects.
 <!--- protected region package descripion end -->
 
 <!--- todo How to handle the image generation -->
-<!--- <img src="./model/wrench_from_csv.png" width="300px" />-->
+<!--- <img src="./model/bridge_wrench_action.png" width="300px" />-->
 
 # Node: wrench_from_csv
 Update frequency: 1000 Hz.
@@ -56,4 +56,33 @@ emulated wrench measure
 <!--- protected region publisher looping begin -->
 indicates when is looping on the data
 <!--- protected region publisher looping end -->
+
+# Node: bridge_wrench_action
+Update frequency: 1000 Hz.
+
+<!--- protected region bridge_wrench_action begin -->
+<!--- protected region bridge_wrench_action end -->
+
+## Subscribed Topics
+
+A topic can be remapped from the command line:
+```
+rosrun ibd_test_data bridge_wrench_action [old_name]:=[new_name]
+```
+
+`looping` *(std_msgs::Empty)*
+<!--- protected region subscriber looping begin -->
+to be informed when we are looping on the scv data
+<!--- protected region subscriber looping end -->
+
+## Action used
+Any action client direaction can be readjusted at node launch:
+
+```
+rosrun ibd_test_data bridge_wrench_action _[old_name]_remap:=[new_name]
+```
+`ibd_learn` *(force_teaching_msgs::TeachIbDForce)*
+<!--- protected region action client ibd_learn begin -->
+to launch the learning of the forces
+<!--- protected region action client ibd_learn end -->
 

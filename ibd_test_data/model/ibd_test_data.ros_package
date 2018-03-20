@@ -12,7 +12,15 @@
             description="csv file containing wrench information to publish"/>
         <parameter name="inc" type="int" value="1"
             description="from the wrench measure, increment applied at each publication loop"/>
-
+    </node>
+    <node name="bridge_wrench_action" frequency ="1000">
+        <subscriber name="looping" type="std_msgs::Empty"
+            description="to be informed when we are looping on the scv data"/>
+        <actionClient name="ibd_learn" type="force_teaching_msgs::TeachIbDForce"
+            description="to launch the learning of the forces"/>
     </node>
 <depend>geometry_msgs</depend>
+<depend>actionlib</depend>
+<depend>std_msgs</depend>
+<depend>force_teaching_msgs</depend>
 </package>

@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+"""
+@package ibd_test_data
+@file bridge_wrench_action
+@author Anthony Remazeilles
+@brief Package containing reference data for initial dev
+        Entry point to the node.
+Copyright (C) {packageCopyright}
+https://www.gnu.org/licenses/gpl.txt
+"""
+from ibd_test_data.bridge_wrench_action_ros import main
+
+if __name__ == '__main__':
+    main()

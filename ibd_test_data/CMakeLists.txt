@@ -7,8 +7,11 @@ project(ibd_test_data)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   geometry_msgs
-  dynamic_reconfigure
+  actionlib
   std_msgs
+  force_teaching_msgs
+  dynamic_reconfigure
+  actionlib_msgs
 )
 
 # protected region additional user defined REQUIREMENTS begin #
@@ -26,6 +29,13 @@ if (ibd_test_data_dyn_rec_files)
 else ()
   set(ibd_test_data_dyn_rec_files cfg/wrench_from_csv.cfg)
   message("Setting with cfg/wrench_from_csv.cfg")
+endif ()
+if (ibd_test_data_dyn_rec_files)
+  list(APPEND ibd_test_data_dyn_rec_files cfg/bridge_wrench_action.cfg)
+  message("Append of cfg/bridge_wrench_action.cfg")
+else ()
+  set(ibd_test_data_dyn_rec_files cfg/bridge_wrench_action.cfg)
+  message("Setting with cfg/bridge_wrench_action.cfg")
 endif ()
 
 message("Test: ${ibd_test_data_dyn_rec_files}")
@@ -45,8 +55,11 @@ catkin_package(
   CATKIN_DEPENDS
     rospy
     geometry_msgs
-    dynamic_reconfigure
+    actionlib
     std_msgs
+    force_teaching_msgs
+    dynamic_reconfigure
+    actionlib_msgs
 )
 
 ###########
