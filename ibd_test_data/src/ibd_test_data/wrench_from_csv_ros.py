@@ -15,6 +15,7 @@ from ibd_test_data.cfg import wrench_from_csvConfig
 
 # ROS message & services includes
 from geometry_msgs.msg import WrenchStamped
+from std_msgs.msg import Bool
 
 # other includes
 from ibd_test_data import wrench_from_csv_impl
@@ -35,6 +36,7 @@ class WrenchFromCsvROS(object):
 
         srv = Server(wrench_from_csvConfig, self.configure_callback)
         self.wrench_ = rospy.Publisher('wrench', WrenchStamped, queue_size=1)
+        self.looping_ = rospy.Publisher('looping', Bool, queue_size=1)
 
     def configure_callback(self, config, level):
         """
@@ -55,9 +57,10 @@ class WrenchFromCsvROS(object):
         activate all defined output
         """
         self.component_data_.out_wrench_active = True
+        self.component_data_.out_looping_active = True
         pass
 
-    def set_all_output_read(self):
+    def set_all_input_read(self):
         """
         set related flag to state that input has been read
         """
@@ -75,7 +78,7 @@ class WrenchFromCsvROS(object):
         self.activate_all_output()
         config = deepcopy(self.component_config_)
         data = deepcopy(self.component_data_)
-        self.set_all_output_read()
+        self.set_all_input_read()
         self.component_implementation_.update(data, config)
 
         try:
@@ -83,6 +86,10 @@ class WrenchFromCsvROS(object):
             self.component_data_.out_wrench = data.out_wrench
             if self.component_data_.out_wrench_active:
                 self.wrench_.publish(self.component_data_.out_wrench)
+            self.component_data_.out_looping_active = data.out_looping_active
+            self.component_data_.out_looping = data.out_looping
+            if self.component_data_.out_looping_active:
+                self.looping_.publish(self.component_data_.out_looping)
         except rospy.ROSException as error:
             rospy.logerr("Exception: {}".format(error))
 

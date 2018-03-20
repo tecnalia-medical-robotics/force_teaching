@@ -1,12 +1,15 @@
 # goal definition
 # whether or not initial contact is done
 bool is_on_contact
+# timeout to finish the action [s]
+float32 timeout
 ---
 # result definition
 # action success
 bool success
+# wether stopped on time_out
+bool is_timeout
 # maximum deformation force (N)
-# the appropriate frame is to be defined
 float32 max_force_deformation
 # maximum snap force (N)
 float32 max_force_snap
@@ -14,4 +17,7 @@ float32 max_force_snap
 # feedback definition
 # current status
 int32 current_stage
-
+# current maximum deformation force (N)
+float32 max_force_deformation
+# current maximum snap force (N)
+float32 max_force_snap

@@ -18,6 +18,7 @@ import tf
 from copy import deepcopy
 import numpy
 import PyKDL
+from ar_signal import ar_window_signal
 # protected region user include package end #
 
 class IbdForceTeachingConfig(object):
@@ -100,6 +101,11 @@ class IbdForceTeachingImplementation(object):
         self.is_end_detected = False
         # iteration
         self.end_id = -1
+        # window process to detect the manipulation start (added force)
+        self.detect_begin = None
+        # window process to detect the manipulation stop (force stabilized)
+        self.detect_end = None
+        # todo add a timeout
         # protected region user member variables end #
 
     def configure(self, config):
@@ -111,6 +117,15 @@ class IbdForceTeachingImplementation(object):
         """
         # protected region user configure begin #
         self.config = deepcopy(config)
+        # todo: read these parameters from the config file
+        self.detect_begin = ar_window_signal.StableStateViolation(dim=3,
+                                                                  size_window=10,
+                                                                  std_factor=10,
+                                                                  verbose=True)
+        self.detect_end = ar_window_signal.UnStableStateViolation(dim=3,
+                                                                   size_window=100,
+                                                                   th_deviation=0.1,
+                                                                   verbose=False)
         return True
         # protected region user configure end #
 
@@ -150,17 +165,12 @@ class IbdForceTeachingImplementation(object):
         # to send the feedback, one should use:
         # self.passthrough.as_learn.publish_feedback(feedback)
         feedback = TeachIbDForceFeedback()
+        feedback.current_stage = 0
         # to contain the outcome of the task at completion
         # to send the result, one should use:
         # on suceess:
         # self.passthrough.as_learn.set_succeeded(result)
         result = TeachIbDForceResult()
-        # Remind that preemption request should be checked during action execution:
-        # if self.passthrough.as_learn.is_preempt_requested():
-        #        rospy.loginfo('Preempted action learn')
-        #        self.passthrough.as_learn.set_preempted()
-        #        success = False
-        #        break
         rate = rospy.Rate(200)
         rospy.loginfo("Received goal: {}".format(goal))
 
@@ -172,14 +182,38 @@ class IbdForceTeachingImplementation(object):
         min_force = None
         max_force = None
 
-
+        id_cur = 0
         is_done = False
+        success = False
         while not is_done:
             if self.passthrough.as_learn.is_preempt_requested():
                rospy.loginfo('Preempted action learn')
                self.passthrough.as_learn.set_preempted()
                success = False
                break
+
+            tmp_force = self.last_wrench.wrench.force
+            tmp_torque = self.last_wrench.wrench.torque
+
+            array_force = geometry_msgs_vector3_to_array(tmp_force)
+            # trying to detect the motion start
+            if not self.is_start_detected and self.detect_begin.process(array_force):
+
+                # contact detected.
+                # todo: memorize the deviation observed to apply it to the next one
+                self.start_id = id_cur
+                self.is_start_detected = True
+                feedback.current_stage = 1
+
+                # in case, we reset the stabilization detecteor.
+            if self.is_start_detected and not self.is_end_detected and \
+               self.detect_end.process(array_force):
+
+               self.end_id = id_cur
+               self.is_end_detected = True
+               is_done = True
+               success = True
+               feedback.current_stage = 2
 
             # get the pose of the sensor relative to the object
             sensor_frame = self.last_wrench.header.frame_id
@@ -201,8 +235,6 @@ class IbdForceTeachingImplementation(object):
             oFs.M = PyKDL.Rotation.Quaternion(*rot)
 
             sWrench = PyKDL.Wrench()
-            tmp_force = self.last_wrench.wrench.force
-            tmp_torque = self.last_wrench.wrench.torque
 
             sWrench.force = PyKDL.Vector(tmp_force.x, tmp_force.y, tmp_force.z)
             sWrench.torque = PyKDL.Vector(tmp_torque.x, tmp_torque.y, tmp_torque.z)
@@ -239,13 +271,21 @@ class IbdForceTeachingImplementation(object):
             # if self.is_start_detected and not is_std_overcome:
             #     self.is_end_detected = True
             #     is_done = True
+            id_cur += 1
+            self.passthrough.as_learn.publish_feedback(feedback)
             rate.sleep()
 
+        print "End of the action !"
+        result.success = success
+        if success:
+            result.max_force_deformation = max(abs(min_force[0]), abs(max_force[0]))
+            result.max_force_snap = max(abs(min_force[1]), abs(max_force[1]))
+            self.passthrough.as_learn.set_succeeded(result)
         # protected region user implementation of action callback for learn end #
 
     # protected region user additional functions begin #
 
-def wrench_to_array(wrench):
+def geometry_msgs_wrench_to_array(wrench):
     """
     convert a geometry_msgs array into an 1d array
     :param wrench: the wrench to convert
@@ -253,6 +293,15 @@ def wrench_to_array(wrench):
     """
     return numpy.array([wrench.force.x, wrench.force.y, wrench.force.z,
                         wrench.torque.x, wrench.torque.y, wrench.torque.z])
+
+def geometry_msgs_vector3_to_array(vector):
+    """
+    convert a geometry_msgs array into an 1d array
+    :param wrench: the wrench to convert
+    :return: the related array
+    """
+    return numpy.array([vector.x, vector.y, vector.z])
+
 
 def kdl_vector_to_array(vector):
     """
