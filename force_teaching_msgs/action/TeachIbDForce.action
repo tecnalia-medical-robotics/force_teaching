@@ -2,7 +2,11 @@
 # whether or not initial contact is done
 bool is_on_contact
 # timeout to finish the action [s]
-float32 timeout
+int32 timeout
+# minimum force expected per entry
+float32 th_min_force
+# wether we learn the devaition before the contact
+bool is_std_learned
 ---
 # result definition
 # action success

@@ -189,11 +189,36 @@ class IbdForceTeachingImplementation(object):
         id_cur = 0
         is_done = False
         success = False
+        is_preempted = False
+
+        duration_timeout = None
+        # looking at the input parameters
+        if goal.timeout != 0:
+            rospy.logwarn("Timeout set to: {}".format(goal.timeout))
+            time_start = rospy.Time.now()
+            duration_timeout = rospy.Duration(goal.timeout)
+        else:
+            rospy.logwarn("No Timeout defined")
+
+        if goal.is_on_contact:
+            # we skip the contact detection
+            self.is_start_detected = True
+            self.detect_end.clear()
+
+            if goal.th_min_force != 0:
+                self.detect_end._th_deviation = goal.th_min_force
+
+        print "Check: th_min {}".format(goal.th_min_force)
+        if goal.th_min_force == 0:
+            rospy.loginfo("th min unset")
+        print "Check: std_learned {}".format(goal.is_std_learned)
+
         while not is_done:
             if self.passthrough.as_learn.is_preempt_requested():
                rospy.loginfo('Preempted action learn')
                self.passthrough.as_learn.set_preempted()
                success = False
+               is_preempted = True
                break
 
             tmp_force = self.last_wrench.wrench.force
@@ -212,12 +237,21 @@ class IbdForceTeachingImplementation(object):
                 deviation = self.detect_begin._std
                 rospy.loginfo("Deviation observed: {}".format(deviation))
 
-                # we defined a minimal value, to be permissive
-                th_value = 0.01
+                if goal.is_std_learned:
+                    # we defined a minimal value, to be permissive
+                    th_value = 0.01
 
-                low_values = deviation < th_value
-                deviation[low_values] = th_value
-                rospy.loginfo("Deviation restricted to : {}".format(deviation))
+                    if goal.th_min_force != 0:
+                        th_value = 0.01
+
+                    low_values = deviation < th_value
+                    deviation[low_values] = th_value
+                    rospy.loginfo("Deviation restricted to : {}".format(deviation))
+                else:
+                    if goal.th_min_force != 0:
+                        deviation = goal.th_min_force
+                    else:
+                        deviation = self.detect_end._th_deviation
 
                 self.detect_end.clear()
                 self.detect_end._th_deviation = deviation
@@ -295,12 +329,25 @@ class IbdForceTeachingImplementation(object):
             self.passthrough.as_learn.publish_feedback(feedback)
             rate.sleep()
 
+            if (duration_timeout is not None) and (not is_done):
+                duration_current = rospy.Time.now() - time_start
+                is_done = duration_timeout < duration_current
+
         print "End of the action !"
         result.success = success
-        if success:
+        #if success:
+
+        if (min_force is not None) and max_force is not None:
             result.max_force_deformation = max(abs(min_force[0]), abs(max_force[0]))
             result.max_force_snap = max(abs(min_force[1]), abs(max_force[1]))
+
+        # todo: should we send aborted in case of timeout?
+        if duration_timeout is not None:
+            result.is_timeout = duration_timeout < duration_current
+
+        if not is_preempted:
             self.passthrough.as_learn.set_succeeded(result)
+
         # protected region user implementation of action callback for learn end #
 
     # protected region user additional functions begin #
