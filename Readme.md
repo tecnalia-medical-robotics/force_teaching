@@ -41,8 +41,20 @@ This will launch the data stored in `ibd_test_data`.
 roslaunch ibd_test_data pub_fake_data.launch
 rosrun ibd_force_teaching ibd_force_teaching
 # to launch an action interface
-rosrun actionlib axclient.py /learn
+rosrun ibd_test_data bridge_wrench_action _ibd_learn_remap:=/learn
 ```
+
+The last script, `bridge_wrench_action` detect when the whole wrench data has been published.
+At that moment, it launches the action of learning.
+The data reproduction (`pub_fake_data.launch`) once published everything, wait for one second, and thn resume the publication from the begining.
+So that the learning is started at the begining of the data.
+
+Looking at the data published:
+
+![pose and wrench data][ibd_test_data/data/sarafun_insertion_by_deformation_03.png]
+
+The two magnitudes looked at (and returned by the action) should be around 6N (`max_force_deformation`) and 14N (`max_force_snap`).
+
 
 
 The illustrative files is generated using:
@@ -50,28 +62,3 @@ The illustrative files is generated using:
 python ar_sarafun_ibd.py --c config/trial_deformation.yaml
 ```
 
-
-
-
-Doing:
-* Check how the wrench should be transformed according to static object pose
- * we will assume pykdl is available.
-   Same method will be used to get the wrench measure at the object frame.
-   We assume that the object frame is well positioned.
-   Eventually later on we could add parameters to set the appropriate axes for the maximum search.
- * so we need the name of the object frame, and the name of the sensor frame
- * handled with dynamic parameters again.
-
-Todo:
-* Check how to add properlly dependency on pykdl or kdl actually
-* Check for the intial and final state analysis: how to detect stability?
- * mention it with Pierre eventually?
-* list potential needs in the node_generator...
-
-
-Node generator:
-* implementation of the "static parameter", wrt dynamic parameters
-* think of model of action-based ros node: how to better implement them.
- * this could be a pure action component, in which the update stands for the inside loop of the action?
-* add a program to see files in a created package that do not come from the model
- * use argparse (https://docs.python.org/3.3/library/argparse.html) to enable the spec of files and directory to keep while making the update.

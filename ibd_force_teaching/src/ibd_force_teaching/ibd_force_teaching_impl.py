@@ -119,15 +119,15 @@ class IbdForceTeachingImplementation(object):
         self.config = deepcopy(config)
         # todo: read these parameters from the config file
         self.detect_begin = ar_window_signal.StableStateViolation(dim=3,
-                                                                  size_window=100,
+                                                                  size_window=20,
                                                                   std_factor=10,
-                                                                  verbose=True)
+                                                                  verbose=False)
 
 
         self.detect_end = ar_window_signal.UnStableStateViolation(dim=3,
-                                                                  size_window=100,
+                                                                  size_window=20,
                                                                   th_deviation=0.01,
-                                                                  verbose=True)
+                                                                  verbose=False)
 
 
         return True
@@ -242,7 +242,7 @@ class IbdForceTeachingImplementation(object):
                     th_value = 0.01
 
                     if goal.th_min_force != 0:
-                        th_value = 0.01
+                        th_value = goal.th_min_force
 
                     low_values = deviation < th_value
                     deviation[low_values] = th_value
@@ -306,8 +306,8 @@ class IbdForceTeachingImplementation(object):
             feedback.max_force_deformation = max(abs(min_force[0]), abs(max_force[0]))
             feedback.max_force_snap = max(abs(min_force[1]), abs(max_force[1]))
 
-            rospy.loginfo("Min: {}".format(min_force))
-            rospy.loginfo("Max: {}".format(max_force))
+            # rospy.loginfo("Min: {}".format(min_force))
+            # rospy.loginfo("Max: {}".format(max_force))
 
             # if len(self.wrenches < self.config.wrench_window):
             #     continue

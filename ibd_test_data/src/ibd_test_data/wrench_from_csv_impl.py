@@ -151,6 +151,9 @@ class WrenchFromCsvImplementation(object):
             self.id_wrench = - config.inc
             data.out_wrench_active = False
             data.out_looping_active = True
+            print "Adding a short sleep"
+            rospy.sleep(1)
+            print "Done"
             return
         wrench = self.wrenches[self.id_wrench]
         wrench.header.stamp = rospy.get_rostime()

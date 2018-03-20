@@ -11,7 +11,7 @@ https://www.gnu.org/licenses/gpl.txt
 
 import rospy
 from std_msgs.msg import Empty
-from force_teaching_msgs.msg import TeachIbDForceAction, TeachIbDForceActionGoal, TeachIbDForceActionFeedback, TeachIbDForceActionResult
+from force_teaching_msgs.msg import TeachIbDForceGoal, TeachIbDForceFeedback, TeachIbDForceResult
 
 # protected region user include package begin #
 import actionlib
@@ -85,7 +85,7 @@ class BridgeWrenchActionImplementation(object):
         """
         # protected region user configure begin #
         self.is_action_running = False
-        goal = TeachIbDForceActionGoal()
+        goal = TeachIbDForceGoal()
         goal.is_on_contact = False
         # timeout to finish the action [s]
         goal.timeout = 10
@@ -116,7 +116,7 @@ class BridgeWrenchActionImplementation(object):
             if self.is_action_running:
                 rospy.logerr("The previous action is not finished!")
                 return
-            goal = TeachIbDForceActionGoal()
+            goal = TeachIbDForceGoal()
             goal.is_on_contact = False
             # timeout to finish the action [s]
             goal.timeout = 10
@@ -125,6 +125,7 @@ class BridgeWrenchActionImplementation(object):
             # wether we learn the devaition before the contact
             goal.is_std_learned = True
 
+            self.is_action_running = True
             self.passthrough.ac_ibd_learn.send_goal(goal)
 
         status = self.passthrough.ac_ibd_learn.simple_state
