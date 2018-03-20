@@ -119,13 +119,17 @@ class IbdForceTeachingImplementation(object):
         self.config = deepcopy(config)
         # todo: read these parameters from the config file
         self.detect_begin = ar_window_signal.StableStateViolation(dim=3,
-                                                                  size_window=10,
+                                                                  size_window=100,
                                                                   std_factor=10,
                                                                   verbose=True)
+
+
         self.detect_end = ar_window_signal.UnStableStateViolation(dim=3,
-                                                                   size_window=100,
-                                                                   th_deviation=0.1,
-                                                                   verbose=False)
+                                                                  size_window=100,
+                                                                  th_deviation=0.01,
+                                                                  verbose=True)
+
+
         return True
         # protected region user configure end #
 
@@ -205,6 +209,19 @@ class IbdForceTeachingImplementation(object):
                 self.is_start_detected = True
                 feedback.current_stage = 1
 
+                deviation = self.detect_begin._std
+                rospy.loginfo("Deviation observed: {}".format(deviation))
+
+                # we defined a minimal value, to be permissive
+                th_value = 0.01
+
+                low_values = deviation < th_value
+                deviation[low_values] = th_value
+                rospy.loginfo("Deviation restricted to : {}".format(deviation))
+
+                self.detect_end.clear()
+                self.detect_end._th_deviation = deviation
+
                 # in case, we reset the stabilization detecteor.
             if self.is_start_detected and not self.is_end_detected and \
                self.detect_end.process(array_force):
@@ -251,6 +268,9 @@ class IbdForceTeachingImplementation(object):
 
             min_force = numpy.minimum(min_force, owrench)
             max_force = numpy.maximum(max_force, owrench)
+
+            feedback.max_force_deformation = max(abs(min_force[0]), abs(max_force[0]))
+            feedback.max_force_snap = max(abs(min_force[1]), abs(max_force[1]))
 
             rospy.loginfo("Min: {}".format(min_force))
             rospy.loginfo("Max: {}".format(max_force))

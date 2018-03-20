@@ -127,6 +127,7 @@ class WrenchFromCsvImplementation(object):
             return False
 
         rospy.loginfo("Loaded {} wrenches".format(len(self.wrenches)))
+        return True
         # protected region user configure end #
 
 

@@ -109,16 +109,12 @@ class StableStateViolation(WindowSignal):
         self._std = None
         # multiplicator applied to the std for stability violation
         self._std_factor = std_factor
-        # deviation measured
-        self._deviation = None
 
     def _clear(self):
         """Clear used variable
         """
         self._mean = None
         self._std = None
-
-        self._deviation = None
 
     def _process(self, data_array):
         """process received data
