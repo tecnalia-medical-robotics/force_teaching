@@ -51,7 +51,7 @@ So that the learning is started at the begining of the data.
 
 Looking at the data published:
 
-![pose and wrench data][ibd_test_data/data/sarafun_insertion_by_deformation_03.png]
+![pose and wrench data](ibd_test_data/data/sarafun_insertion_by_deformation_03.png)
 
 The two magnitudes looked at (and returned by the action) should be around 6N (`max_force_deformation`) and 14N (`max_force_snap`).
 
