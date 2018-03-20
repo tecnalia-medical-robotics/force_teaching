@@ -125,7 +125,7 @@ class IbdForceTeachingImplementation(object):
 
 
         self.detect_end = ar_window_signal.UnStableStateViolation(dim=3,
-                                                                  size_window=20,
+                                                                  size_window=30,
                                                                   th_deviation=0.01,
                                                                   verbose=False)
 
