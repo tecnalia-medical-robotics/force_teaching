@@ -15,7 +15,7 @@ from ibd_test_data.cfg import wrench_from_csvConfig
 
 # ROS message & services includes
 from geometry_msgs.msg import WrenchStamped
-from std_msgs.msg import Bool
+from std_msgs.msg import Empty
 
 # other includes
 from ibd_test_data import wrench_from_csv_impl
@@ -36,7 +36,7 @@ class WrenchFromCsvROS(object):
 
         srv = Server(wrench_from_csvConfig, self.configure_callback)
         self.wrench_ = rospy.Publisher('wrench', WrenchStamped, queue_size=1)
-        self.looping_ = rospy.Publisher('looping', Bool, queue_size=1)
+        self.looping_ = rospy.Publisher('looping', Empty, queue_size=1)
 
     def configure_callback(self, config, level):
         """

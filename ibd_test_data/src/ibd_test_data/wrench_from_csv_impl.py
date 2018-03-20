@@ -11,7 +11,7 @@ https://www.gnu.org/licenses/gpl.txt
 
 import rospy
 from geometry_msgs.msg import WrenchStamped
-from std_msgs.msg import Bool
+from std_msgs.msg import Empty
 
 # protected region user include package begin #
 import csv
@@ -47,7 +47,7 @@ class WrenchFromCsvData(object):
         # output data
         self.out_wrench = WrenchStamped()
         self.out_wrench_active = bool()
-        self.out_looping = Bool()
+        self.out_looping = Empty()
         self.out_looping_active = bool()
         pass
 
@@ -143,11 +143,13 @@ class WrenchFromCsvImplementation(object):
         """
         # protected region user update begin #
         # rospy.loginfo("Check : inc is {} ".format(config.inc))
+        data.out_looping_active = False
         self.id_wrench += config.inc
         if self.id_wrench >= len(self.wrenches):
             rospy.loginfo("Published all wrenches, looping at next iteration")
             self.id_wrench = - config.inc
             data.out_wrench_active = False
+            data.out_looping_active = True
             return
         wrench = self.wrenches[self.id_wrench]
         wrench.header.stamp = rospy.get_rostime()

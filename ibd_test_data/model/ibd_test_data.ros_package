@@ -6,7 +6,7 @@
     <node name="wrench_from_csv" frequency="1000">
         <publisher name="wrench" type="geometry_msgs::WrenchStamped"
             description="emulated wrench measure"/>
-        <publisher name="looping" type="std_msgs::Bool"
+        <publisher name="looping" type="std_msgs::Empty"
             description="indicates when is looping on the data"/>
         <parameter name="csv_file" type="std::string" value="Undef"
             description="csv file containing wrench information to publish"/>

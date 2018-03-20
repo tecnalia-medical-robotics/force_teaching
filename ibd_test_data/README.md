@@ -52,7 +52,7 @@ rosrun ibd_test_data wrench_from_csv [old_name]:=[new_name]
 <!--- protected region publisher wrench begin -->
 emulated wrench measure
 <!--- protected region publisher wrench end -->
-`looping` *(std_msgs::Bool)*
+`looping` *(std_msgs::Empty)*
 <!--- protected region publisher looping begin -->
 indicates when is looping on the data
 <!--- protected region publisher looping end -->
